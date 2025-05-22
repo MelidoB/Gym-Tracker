@@ -23,52 +23,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadUserPreferences() async {
-    final name = await _localStorageService.getPreferences('name') as String?;
-    final useKg = await _localStorageService.getPreferences('useKg') as bool?;
-
+    final prefs = await _localStorageService.getUserPreferences();
     setState(() {
-      _userPreferences = UserPreferences(
-        name: name ?? '',
-        useKg: useKg ?? false,
-      );
+      _userPreferences = prefs;
       _nameController = TextEditingController(text: _userPreferences.name);
     });
   }
 
   Future<void> _saveUseKg(bool value) async {
-    await _localStorageService.setPreferences('useKg', value);
-    setState(() {
-      _userPreferences.useKg = value;
-    });
+    _userPreferences.useKg = value;
+    await _localStorageService.saveUserPreferences(_userPreferences); // Changed from setUserPreferences
+    setState(() {});
   }
 
   Future<void> _saveName(String value) async {
-    await _localStorageService.setPreferences('name', value);
-    setState(() {
-      _userPreferences.name = value;
-    });
+    _userPreferences.name = value;
+    await _localStorageService.saveUserPreferences(_userPreferences); // Changed from setUserPreferences
+    setState(() {});
+  }
+
+  Future<void> _saveWorkoutType(String value) async {
+    _userPreferences.preferredWorkoutType = value;
+    await _localStorageService.saveUserPreferences(_userPreferences); // Changed from setUserPreferences
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        title: const Text('Settings'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Name'),
+              decoration: const InputDecoration(labelText: 'Name'),
               onChanged: (value) {
                 _saveName(value);
               },
             ),
             Row(
               children: [
-                Text('Use Kilograms'),
+                const Text('Use Kilograms'),
                 Checkbox(
                   value: _userPreferences.useKg,
                   onChanged: (bool? newValue) {
@@ -79,7 +78,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
+            DropdownButton<String>(
+              value: _userPreferences.preferredWorkoutType,
+              items: ['General', 'Legs', 'Upper', 'Cardio'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  _saveWorkoutType(newValue);
+                }
+              },
+            ),
             Text('Use Kilograms: ${_userPreferences.useKg ? 'Yes' : 'No'}'),
+            Text('Preferred Workout: ${_userPreferences.preferredWorkoutType}'),
           ],
         ),
       ),

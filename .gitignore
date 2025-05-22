@@ -1,0 +1,24 @@
+# Flutter Project
+*.pub
+/build
+/public
+/android
+/ios
+/macos
+/windows
+/linux
+/plugins
+/fonts
+/assets
+/gen
+/android/app/build/
+/ios/build/
+/android/app/src/main/AndroidManifest.xml
+/ios/Runner.xcworkspace
+/ios/Runner.plist
+/android/settings_screen.xml
+
+# Editor Specific
+.idea/
+.vs/
+*.iml

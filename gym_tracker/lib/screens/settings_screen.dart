@@ -13,6 +13,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late LocalStorageService _localStorageService;
   UserPreferences _userPreferences = UserPreferences();
+  late TextEditingController _nameController;
 
   @override
   void didChangeDependencies() {
@@ -22,16 +23,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadUserPreferences() async {
-    final name = await _localStorageService.getPreferences('name') as 
-String?;
-    final useKg = await _localStorageService.getPreferences('useKg') as 
-bool?;
+    final name = await _localStorageService.getPreferences('name') as String?;
+    final useKg = await _localStorageService.getPreferences('useKg') as bool?;
 
     setState(() {
       _userPreferences = UserPreferences(
         name: name ?? '',
         useKg: useKg ?? false,
       );
+      _nameController = TextEditingController(text: _userPreferences.name);
     });
   }
 
@@ -39,6 +39,13 @@ bool?;
     await _localStorageService.setPreferences('useKg', value);
     setState(() {
       _userPreferences.useKg = value;
+    });
+  }
+
+  Future<void> _saveName(String value) async {
+    await _localStorageService.setPreferences('name', value);
+    setState(() {
+      _userPreferences.name = value;
     });
   }
 
@@ -51,9 +58,20 @@ bool?;
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Name: ${_userPreferences.name == '' ? 'None' : 
-_userPreferences.name}'),
+          Text('Saved Name: ${_userPreferences.name == null || _userPreferences.name!.isEmpty ? 'None' : _userPreferences.name}',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+
+            SizedBox(height: 16),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: 'Enter your name'),
+              onChanged: (value) {
+                _saveName(value);
+              },
+            ),
+            SizedBox(height: 16),
             Row(
               children: [
                 Text('Use Kilograms'),
@@ -67,8 +85,8 @@ _userPreferences.name}'),
                 ),
               ],
             ),
-            Text('Use Kilograms: ${_userPreferences.useKg ? 'Yes' : 
-'No'}'),
+            SizedBox(height: 16),
+            Text('Use Kilograms: ${_userPreferences.useKg ? 'Yes' : 'No'}'),
           ],
         ),
       ),

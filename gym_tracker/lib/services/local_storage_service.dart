@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/workout.dart';
-import 'dart:convert'; // Provides jsonEncode and jsonDecode
+import '../models/pre_workout.dart';
+import 'dart:convert';
 
 class LocalStorageService {
   Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
@@ -34,7 +35,20 @@ class LocalStorageService {
     return workouts.map((w) => Workout.fromJson(jsonDecode(w))).toList();
   }
 
-  // Mock data initialization (for testing)
+  Future<void> savePreWorkout(PreWorkout preWorkout) async {
+    final prefs = await _prefs;
+    await prefs.setString('preWorkout', jsonEncode(preWorkout.toJson()));
+  }
+
+  Future<PreWorkout> getPreWorkout() async {
+    final prefs = await _prefs;
+    final preWorkoutJson = prefs.getString('preWorkout');
+    if (preWorkoutJson != null) {
+      return PreWorkout.fromJson(jsonDecode(preWorkoutJson));
+    }
+    return PreWorkout();
+  }
+
   Future<void> initializeMockData() async {
     final prefs = await _prefs;
     if (prefs.getStringList('workouts') == null) {

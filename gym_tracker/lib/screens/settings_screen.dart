@@ -22,8 +22,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadUserPreferences() async {
-    final name = await _localStorageService.getPreferences('name') as String?;
-    final useKg = await _localStorageService.getPreferences('useKg') as bool?;
+    final name = await _localStorageService.getPreferences('name') as 
+String?;
+    final useKg = await _localStorageService.getPreferences('useKg') as 
+bool?;
 
     setState(() {
       _userPreferences = UserPreferences(
@@ -50,9 +52,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text('Name: ${_userPreferences.name == '' ? 'None' : _userPreferences.name}'),
+            Text('Name: ${_userPreferences.name == '' ? 'None' : 
+_userPreferences.name}'),
             Row(
               children: [
+                Text('Use Kilograms'),
                 Checkbox(
                   value: _userPreferences.useKg,
                   onChanged: (bool? newValue) {
@@ -61,10 +65,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     }
                   },
                 ),
-                Text('Use Kilograms'),
               ],
             ),
-            Text('Use Kilograms: ${_userPreferences.useKg ? 'Yes' : 'No'}'),
+            Text('Use Kilograms: ${_userPreferences.useKg ? 'Yes' : 
+'No'}'),
           ],
         ),
       ),

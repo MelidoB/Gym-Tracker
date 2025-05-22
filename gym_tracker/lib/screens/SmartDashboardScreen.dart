@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/workout.dart';
 import '../models/weather.dart';
 import '../models/pre_workout.dart';
+import '../models/warm_up.dart';
 import '../services/local_storage_service.dart';
 import 'settings_screen.dart';
 import 'package:intl/intl.dart';
@@ -20,6 +21,7 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
   Workout? _suggestedWorkout;
   Weather _weather = Weather(condition: 'Rain', recommendIndoor: true); // Mock
   PreWorkout _preWorkout = PreWorkout();
+  WarmUp? _warmUp;
 
   @override
   void didChangeDependencies() {
@@ -39,6 +41,9 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
         .toList();
     setState(() {
       _suggestedWorkout = recentWorkouts.isNotEmpty ? recentWorkouts.first : null;
+      _warmUp = _suggestedWorkout != null
+          ? WarmUp.suggestForWorkoutType(_suggestedWorkout!.type)
+          : null;
     });
   }
 
@@ -138,6 +143,14 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
               },
             ),
             Text('Water: ${_preWorkout.waterIntake} ml'),
+            const SizedBox(height: 24),
+            const Text('AI Warm-Up', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(
+              _warmUp != null
+                  ? 'Suggested: ${_warmUp!.name} for ${_warmUp!.duration}'
+                  : 'No warm-up suggestion',
+              style: const TextStyle(fontSize: 18),
+            ),
           ],
         ),
       ),

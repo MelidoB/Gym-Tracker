@@ -5,7 +5,7 @@ import '../models/user_preferences.dart';
 import 'dart:convert';
 
 class LocalStorageService {
-  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
   Future<void> setPreferences(String key, dynamic value) async {
     final prefs = await _prefs;

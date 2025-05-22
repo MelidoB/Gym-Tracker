@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gym_tracker/screens/SmartDashboardScreen.dart';
+import 'package:gym_tracker/screens/smart_dashboard_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'services/local_storage_service.dart';
@@ -19,7 +19,7 @@ void main() {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const SmartDashboardScreen(),
+        home: const smart_dashboard_screen(),
       ),
     ),
   );

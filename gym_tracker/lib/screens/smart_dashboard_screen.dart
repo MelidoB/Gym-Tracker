@@ -9,17 +9,17 @@ import 'settings_screen.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 
-class SmartDashboardScreen extends StatefulWidget {
-  const SmartDashboardScreen({Key? key}) : super(key: key);
+class smart_dashboard_screen extends StatefulWidget {
+  const smart_dashboard_screen({super.key});
 
   @override
-  State<SmartDashboardScreen> createState() => _SmartDashboardScreenState();
+  State<smart_dashboard_screen> createState() => _smart_dashboard_screenState();
 }
 
-class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
+class _smart_dashboard_screenState extends State<smart_dashboard_screen> {
   late LocalStorageService _localStorageService;
   Workout? _suggestedWorkout;
-  Weather _weather = Weather(condition: 'Rain', recommendIndoor: true); // Mock
+  final Weather _weather = Weather(condition: 'Rain', recommendIndoor: true); // Mock
   PreWorkout _preWorkout = PreWorkout();
   WarmUp? _warmUp;
 

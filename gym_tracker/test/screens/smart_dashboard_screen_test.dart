@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gym_tracker/screens/SmartDashboardScreen.dart';
+import 'package:gym_tracker/screens/smart_dashboard_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:gym_tracker/models/workout.dart';
 import 'package:gym_tracker/models/pre_workout.dart';
@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 void main() {
-  group('SmartDashboardScreen Widget Tests', () {
+  group('smart_dashboard_screen Widget Tests', () {
     late LocalStorageService localStorageService;
 
     setUp(() async {
@@ -24,7 +24,7 @@ void main() {
         MaterialApp(
           home: Provider<LocalStorageService>.value(
             value: localStorageService,
-            child: const SmartDashboardScreen(),
+            child: const smart_dashboard_screen(),
           ),
         ),
       );
@@ -43,7 +43,7 @@ void main() {
         MaterialApp(
           home: Provider<LocalStorageService>.value(
             value: localStorageService,
-            child: const SmartDashboardScreen(),
+            child: const smart_dashboard_screen(),
           ),
         ),
       );
@@ -72,7 +72,7 @@ void main() {
         MaterialApp(
           home: Provider<LocalStorageService>.value(
             value: localStorageService,
-            child: const SmartDashboardScreen(),
+            child: const smart_dashboard_screen(),
           ),
         ),
       );

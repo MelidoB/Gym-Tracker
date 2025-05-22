@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/workout.dart';
 import '../models/pre_workout.dart';
+import '../models/user_preferences.dart';
 import 'dart:convert';
 
 class LocalStorageService {
@@ -49,6 +50,25 @@ class LocalStorageService {
     return PreWorkout();
   }
 
+  Future<void> saveUserPreferences(UserPreferences prefs) async {
+    final sharedPrefs = await _prefs;
+    await sharedPrefs.setString('userPreferences', jsonEncode(prefs.toJson()));
+  }
+
+  Future<UserPreferences> getUserPreferences() async {
+    final prefs = await _prefs;
+    final prefsJson = prefs.getString('userPreferences');
+    if (prefsJson != null) {
+      return UserPreferences.fromJson(jsonDecode(prefsJson));
+    }
+    return UserPreferences();
+  }
+
+  Future<void> clearData() async {
+    final prefs = await _prefs;
+    await prefs.clear();
+  }
+
   Future<void> initializeMockData() async {
     final prefs = await _prefs;
     if (prefs.getStringList('workouts') == null) {
@@ -63,4 +83,5 @@ class LocalStorageService {
       );
     }
   }
+
 }

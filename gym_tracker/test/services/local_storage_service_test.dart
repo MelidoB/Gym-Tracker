@@ -2,8 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:gym_tracker/models/pre_workout.dart';
-import 'package:gym_tracker/models/user_preferences.dart';
+import 'package:gym_tracker/models/post_workout_recovery.dart';
 import 'package:gym_tracker/models/workout.dart';
 import 'package:gym_tracker/services/local_storage_service.dart';
 import 'dart:convert';
@@ -16,119 +15,116 @@ void main() {
 
   group('LocalStorageService Tests', () {
     late LocalStorageService localStorageService;
-    late MockSharedPreferences mockSharedPreferences;
+    late MockSharedPreferences mockPrefs;
 
     setUp(() async {
-      mockSharedPreferences = MockSharedPreferences();
-      // Set default mocks to avoid MissingPluginException
-      when(mockSharedPreferences.getString(any)).thenReturn(null);
-      when(mockSharedPreferences.getStringList(any)).thenReturn(null);
-      when(mockSharedPreferences.setString(any, any)).thenAnswer((_) async => true);
-      when(mockSharedPreferences.setStringList(any, any)).thenAnswer((_) async => true);
+      mockPrefs = MockSharedPreferences();
+      when(mockPrefs.getString(any)).thenReturn(null);
+      when(mockPrefs.getStringList(any)).thenReturn(null);
+      when(mockPrefs.setString(any, any)).thenAnswer((_) async => true);
+      when(mockPrefs.setStringList(any, any)).thenAnswer((_) async => true);
 
-      // Pass mock directly to constructor
-      localStorageService = LocalStorageService(prefs: mockSharedPreferences);
+      localStorageService = LocalStorageService(prefs: mockPrefs);
     });
 
-    test('savePreWorkout stores data correctly', () async {
-      final preWorkout = PreWorkout(gymBagPrepped: true, energyLevel: 3, waterIntake: 1000);
-      final jsonString = jsonEncode(preWorkout.toJson());
+    test('Saves soreness data correctly', () async {
+      final soreness = PostWorkoutRecovery(
+        workoutId: 'abc123',
+        sorenessLevel: 4,
+        postWorkoutEnergy: 3,
+        recoveryNotes: 'Moderate soreness in quads',
+      );
+      final jsonString = jsonEncode(soreness.toJson());
 
-      await localStorageService.savePreWorkout(preWorkout);
+      await localStorageService.saveSoreness(soreness);
 
-      verify(mockSharedPreferences.setString('preWorkout', jsonString)).called(1);
+      verify(mockPrefs.setString('soreness_abc123', jsonString)).called(1);
     });
 
-    test('getPreWorkout returns stored data', () async {
-      final preWorkout = PreWorkout(gymBagPrepped: true, energyLevel: 3, waterIntake: 1000);
-      final jsonString = jsonEncode(preWorkout.toJson());
-      when(mockSharedPreferences.getString('preWorkout')).thenReturn(jsonString);
+    test('Retrieves soreness data correctly', () async {
+      final soreness = PostWorkoutRecovery(
+        workoutId: 'abc123',
+        sorenessLevel: 4,
+        postWorkoutEnergy: 3,
+        recoveryNotes: 'Moderate soreness in quads',
+      );
+      final jsonString = jsonEncode(soreness.toJson());
+      when(mockPrefs.getString('soreness_abc123')).thenReturn(jsonString);
 
-      final result = await localStorageService.getPreWorkout();
+      final result = await localStorageService.getSoreness('abc123');
 
-      expect(result.gymBagPrepped, preWorkout.gymBagPrepped);
-      expect(result.energyLevel, preWorkout.energyLevel);
-      expect(result.waterIntake, preWorkout.waterIntake);
+      expect(result.workoutId, 'abc123');
+      expect(result.sorenessLevel, 4);
+      expect(result.postWorkoutEnergy, 3);
+      expect(result.recoveryNotes, 'Moderate soreness in quads');
     });
 
-    test('getPreWorkout returns default when no data', () async {
-      final result = await localStorageService.getPreWorkout();
+    test('Returns default soreness when no data exists', () async {
+      final result = await localStorageService.getSoreness('abc123');
 
-      expect(result.gymBagPrepped, false);
-      expect(result.energyLevel, 1);
-      expect(result.waterIntake, 500);
+      expect(result.workoutId, 'abc123');
+      expect(result.sorenessLevel, 0);
+      expect(result.postWorkoutEnergy, 0);
+      expect(result.recoveryNotes, '');
     });
 
-    test('saveUserPreferences stores data correctly', () async {
-      final userPrefs = UserPreferences(name: 'Test User', useKg: true, preferredWorkoutType: 'Cardio');
-      final jsonString = jsonEncode(userPrefs.toJson());
-
-      await localStorageService.saveUserPreferences(userPrefs);
-
-      verify(mockSharedPreferences.setString('userPreferences', jsonString)).called(1);
-    });
-
-    test('getUserPreferences returns stored data', () async {
-      final userPrefs = UserPreferences(name: 'Test User', useKg: true, preferredWorkoutType: 'Cardio');
-      final jsonString = jsonEncode(userPrefs.toJson());
-      when(mockSharedPreferences.getString('userPreferences')).thenReturn(jsonString);
-
-      final result = await localStorageService.getUserPreferences();
-
-      expect(result.name, userPrefs.name);
-      expect(result.useKg, userPrefs.useKg);
-      expect(result.preferredWorkoutType, userPrefs.preferredWorkoutType);
-    });
-
-    test('getUserPreferences returns default when no data', () async {
-      final result = await localStorageService.getUserPreferences();
-
-      expect(result.name, '');
-      expect(result.useKg, false);
-      expect(result.preferredWorkoutType, 'General');
-    });
-
-    test('saveWorkout adds to workout history', () async {
-      final workout = Workout(name: 'Leg Day', dayOfWeek: 'Tuesday', time: '17:00', type: 'Legs');
+    test('Saves workout with postWorkoutEnergy correctly', () async {
+      final workout = Workout(
+        name: 'Chest Day',
+        dayOfWeek: 'Monday',
+        time: '18:00',
+        type: 'Upper',
+        postWorkoutEnergy: 3,
+      );
       final jsonList = [jsonEncode(workout.toJson())];
-      when(mockSharedPreferences.getStringList('workouts')).thenReturn([]);
+      when(mockPrefs.getStringList('workouts')).thenReturn([]);
 
       await localStorageService.saveWorkout(workout);
 
-      verify(mockSharedPreferences.setStringList('workouts', jsonList)).called(1);
+      verify(mockPrefs.setStringList('workouts', jsonList)).called(1);
     });
 
-    test('getWorkoutHistory returns stored workouts', () async {
-      final workout = Workout(name: 'Leg Day', dayOfWeek: 'Tuesday', time: '17:00', type: 'Legs');
+    test('Retrieves workout history with postWorkoutEnergy', () async {
+      final workout = Workout(
+        name: 'Chest Day',
+        dayOfWeek: 'Monday',
+        time: '18:00',
+        type: 'Upper',
+        postWorkoutEnergy: 3,
+      );
       final jsonList = [jsonEncode(workout.toJson())];
-      when(mockSharedPreferences.getStringList('workouts')).thenReturn(jsonList);
+      when(mockPrefs.getStringList('workouts')).thenReturn(jsonList);
 
       final result = await localStorageService.getWorkoutHistory();
 
       expect(result.length, 1);
-      expect(result[0].name, workout.name);
-      expect(result[0].dayOfWeek, workout.dayOfWeek);
-      expect(result[0].time, workout.time);
-      expect(result[0].type, workout.type);
+      expect(result[0].name, 'Chest Day');
+      expect(result[0].postWorkoutEnergy, 3);
     });
 
-    test('getWorkoutHistory returns empty list when no data', () async {
-      final result = await localStorageService.getWorkoutHistory();
-
-      expect(result, isEmpty);
-    });
-
-    test('initializeMockData sets mock workouts when none exist', () async {
+    test('initializeMockData includes postWorkoutEnergy', () async {
       final mockWorkouts = [
-        Workout(name: 'Leg Day', dayOfWeek: 'Tuesday', time: '17:00', type: 'Legs'),
-        Workout(name: 'Upper Body', dayOfWeek: 'Thursday', time: '18:00', type: 'Upper'),
+        Workout(
+          name: 'Leg Day',
+          dayOfWeek: 'Tuesday',
+          time: '17:00',
+          type: 'Legs',
+          postWorkoutEnergy: 2,
+        ),
+        Workout(
+          name: 'Upper Body',
+          dayOfWeek: 'Thursday',
+          time: '18:00',
+          type: 'Upper',
+          postWorkoutEnergy: 3,
+        ),
       ];
       final jsonList = mockWorkouts.map((w) => jsonEncode(w.toJson())).toList();
-      when(mockSharedPreferences.getStringList('workouts')).thenReturn(null);
+      when(mockPrefs.getStringList('workouts')).thenReturn(null);
 
       await localStorageService.initializeMockData();
 
-      verify(mockSharedPreferences.setStringList('workouts', jsonList)).called(1);
+      verify(mockPrefs.setStringList('workouts', jsonList)).called(1);
     });
   });
 }

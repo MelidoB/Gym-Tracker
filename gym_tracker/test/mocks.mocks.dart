@@ -3,14 +3,15 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i6;
+import 'dart:async' as _i7;
 
+import 'package:gym_tracker/models/post_workout_recovery.dart' as _i4;
 import 'package:gym_tracker/models/pre_workout.dart' as _i2;
 import 'package:gym_tracker/models/user_preferences.dart' as _i3;
-import 'package:gym_tracker/models/workout.dart' as _i7;
-import 'package:gym_tracker/services/local_storage_service.dart' as _i4;
+import 'package:gym_tracker/models/workout.dart' as _i8;
+import 'package:gym_tracker/services/local_storage_service.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:shared_preferences/shared_preferences.dart' as _i5;
+import 'package:shared_preferences/shared_preferences.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -37,85 +38,113 @@ class _FakeUserPreferences_1 extends _i1.SmartFake
     : super(parent, parentInvocation);
 }
 
+class _FakePostWorkoutRecovery_2 extends _i1.SmartFake
+    implements _i4.PostWorkoutRecovery {
+  _FakePostWorkoutRecovery_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [LocalStorageService].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockLocalStorageService extends _i1.Mock
-    implements _i4.LocalStorageService {
+    implements _i5.LocalStorageService {
   MockLocalStorageService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  void setPrefsForTesting(_i5.SharedPreferences? prefs) => super.noSuchMethod(
+  void setPrefsForTesting(_i6.SharedPreferences? prefs) => super.noSuchMethod(
     Invocation.method(#setPrefsForTesting, [prefs]),
     returnValueForMissingStub: null,
   );
 
   @override
-  _i6.Future<void> savePreWorkout(_i2.PreWorkout? preWorkout) =>
+  _i7.Future<void> savePreWorkout(_i2.PreWorkout? preWorkout) =>
       (super.noSuchMethod(
             Invocation.method(#savePreWorkout, [preWorkout]),
-            returnValue: _i6.Future<void>.value(),
-            returnValueForMissingStub: _i6.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i6.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i6.Future<_i2.PreWorkout> getPreWorkout() =>
+  _i7.Future<_i2.PreWorkout> getPreWorkout() =>
       (super.noSuchMethod(
             Invocation.method(#getPreWorkout, []),
-            returnValue: _i6.Future<_i2.PreWorkout>.value(
+            returnValue: _i7.Future<_i2.PreWorkout>.value(
               _FakePreWorkout_0(this, Invocation.method(#getPreWorkout, [])),
             ),
           )
-          as _i6.Future<_i2.PreWorkout>);
+          as _i7.Future<_i2.PreWorkout>);
 
   @override
-  _i6.Future<void> saveUserPreferences(_i3.UserPreferences? prefs) =>
+  _i7.Future<void> saveUserPreferences(_i3.UserPreferences? prefs) =>
       (super.noSuchMethod(
             Invocation.method(#saveUserPreferences, [prefs]),
-            returnValue: _i6.Future<void>.value(),
-            returnValueForMissingStub: _i6.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i6.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i6.Future<_i3.UserPreferences> getUserPreferences() =>
+  _i7.Future<_i3.UserPreferences> getUserPreferences() =>
       (super.noSuchMethod(
             Invocation.method(#getUserPreferences, []),
-            returnValue: _i6.Future<_i3.UserPreferences>.value(
+            returnValue: _i7.Future<_i3.UserPreferences>.value(
               _FakeUserPreferences_1(
                 this,
                 Invocation.method(#getUserPreferences, []),
               ),
             ),
           )
-          as _i6.Future<_i3.UserPreferences>);
+          as _i7.Future<_i3.UserPreferences>);
 
   @override
-  _i6.Future<void> saveWorkout(_i7.Workout? workout) =>
+  _i7.Future<void> saveWorkout(_i8.Workout? workout) =>
       (super.noSuchMethod(
             Invocation.method(#saveWorkout, [workout]),
-            returnValue: _i6.Future<void>.value(),
-            returnValueForMissingStub: _i6.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i6.Future<void>);
+          as _i7.Future<void>);
 
   @override
-  _i6.Future<List<_i7.Workout>> getWorkoutHistory() =>
+  _i7.Future<List<_i8.Workout>> getWorkoutHistory() =>
       (super.noSuchMethod(
             Invocation.method(#getWorkoutHistory, []),
-            returnValue: _i6.Future<List<_i7.Workout>>.value(<_i7.Workout>[]),
+            returnValue: _i7.Future<List<_i8.Workout>>.value(<_i8.Workout>[]),
           )
-          as _i6.Future<List<_i7.Workout>>);
+          as _i7.Future<List<_i8.Workout>>);
 
   @override
-  _i6.Future<void> initializeMockData() =>
+  _i7.Future<void> saveSoreness(_i4.PostWorkoutRecovery? soreness) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveSoreness, [soreness]),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
+          )
+          as _i7.Future<void>);
+
+  @override
+  _i7.Future<_i4.PostWorkoutRecovery> getSoreness(String? workoutId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getSoreness, [workoutId]),
+            returnValue: _i7.Future<_i4.PostWorkoutRecovery>.value(
+              _FakePostWorkoutRecovery_2(
+                this,
+                Invocation.method(#getSoreness, [workoutId]),
+              ),
+            ),
+          )
+          as _i7.Future<_i4.PostWorkoutRecovery>);
+
+  @override
+  _i7.Future<void> initializeMockData() =>
       (super.noSuchMethod(
             Invocation.method(#initializeMockData, []),
-            returnValue: _i6.Future<void>.value(),
-            returnValueForMissingStub: _i6.Future<void>.value(),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
           )
-          as _i6.Future<void>);
+          as _i7.Future<void>);
 }

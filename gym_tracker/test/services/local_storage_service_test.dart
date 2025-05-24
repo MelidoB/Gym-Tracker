@@ -1,5 +1,5 @@
-// test/services/local_storage_service_test.dart
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gym_tracker/models/pre_workout.dart';
@@ -8,31 +8,41 @@ import 'package:gym_tracker/models/workout.dart';
 import 'package:gym_tracker/services/local_storage_service.dart';
 import 'dart:convert';
 
-class MockSharedPreferences extends Mock implements SharedPreferences {}
+import 'local_storage_service_test.mocks.dart';
 
+@GenerateMocks([SharedPreferences])
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('LocalStorageService Tests', () {
     late LocalStorageService localStorageService;
     late MockSharedPreferences mockSharedPreferences;
 
-    setUp(() {
+    setUp(() async {
       mockSharedPreferences = MockSharedPreferences();
-      localStorageService = LocalStorageService();
-      localStorageService.setPrefsForTesting(mockSharedPreferences);
+      // Set default mocks to avoid MissingPluginException
+      when(mockSharedPreferences.getString(any)).thenReturn(null);
+      when(mockSharedPreferences.getStringList(any)).thenReturn(null);
+      when(mockSharedPreferences.setString(any, any)).thenAnswer((_) async => true);
+      when(mockSharedPreferences.setStringList(any, any)).thenAnswer((_) async => true);
+
+      // Pass mock directly to constructor
+      localStorageService = LocalStorageService(prefs: mockSharedPreferences);
     });
 
     test('savePreWorkout stores data correctly', () async {
       final preWorkout = PreWorkout(gymBagPrepped: true, energyLevel: 3, waterIntake: 1000);
-      when(mockSharedPreferences.setString('preWorkout', any)).thenAnswer((_) async => true);
+      final jsonString = jsonEncode(preWorkout.toJson());
 
       await localStorageService.savePreWorkout(preWorkout);
 
-      verify(mockSharedPreferences.setString('preWorkout', jsonEncode(preWorkout.toJson()))).called(1);
+      verify(mockSharedPreferences.setString('preWorkout', jsonString)).called(1);
     });
 
     test('getPreWorkout returns stored data', () async {
       final preWorkout = PreWorkout(gymBagPrepped: true, energyLevel: 3, waterIntake: 1000);
-      when(mockSharedPreferences.getString('preWorkout')).thenReturn(jsonEncode(preWorkout.toJson()));
+      final jsonString = jsonEncode(preWorkout.toJson());
+      when(mockSharedPreferences.getString('preWorkout')).thenReturn(jsonString);
 
       final result = await localStorageService.getPreWorkout();
 
@@ -42,8 +52,6 @@ void main() {
     });
 
     test('getPreWorkout returns default when no data', () async {
-      when(mockSharedPreferences.getString('preWorkout')).thenReturn(null);
-
       final result = await localStorageService.getPreWorkout();
 
       expect(result.gymBagPrepped, false);
@@ -53,16 +61,17 @@ void main() {
 
     test('saveUserPreferences stores data correctly', () async {
       final userPrefs = UserPreferences(name: 'Test User', useKg: true, preferredWorkoutType: 'Cardio');
-      when(mockSharedPreferences.setString('userPreferences', any)).thenAnswer((_) async => true);
+      final jsonString = jsonEncode(userPrefs.toJson());
 
       await localStorageService.saveUserPreferences(userPrefs);
 
-      verify(mockSharedPreferences.setString('userPreferences', jsonEncode(userPrefs.toJson()))).called(1);
+      verify(mockSharedPreferences.setString('userPreferences', jsonString)).called(1);
     });
 
     test('getUserPreferences returns stored data', () async {
       final userPrefs = UserPreferences(name: 'Test User', useKg: true, preferredWorkoutType: 'Cardio');
-      when(mockSharedPreferences.getString('userPreferences')).thenReturn(jsonEncode(userPrefs.toJson()));
+      final jsonString = jsonEncode(userPrefs.toJson());
+      when(mockSharedPreferences.getString('userPreferences')).thenReturn(jsonString);
 
       final result = await localStorageService.getUserPreferences();
 
@@ -72,8 +81,6 @@ void main() {
     });
 
     test('getUserPreferences returns default when no data', () async {
-      when(mockSharedPreferences.getString('userPreferences')).thenReturn(null);
-
       final result = await localStorageService.getUserPreferences();
 
       expect(result.name, '');
@@ -83,17 +90,18 @@ void main() {
 
     test('saveWorkout adds to workout history', () async {
       final workout = Workout(name: 'Leg Day', dayOfWeek: 'Tuesday', time: '17:00', type: 'Legs');
+      final jsonList = [jsonEncode(workout.toJson())];
       when(mockSharedPreferences.getStringList('workouts')).thenReturn([]);
-      when(mockSharedPreferences.setStringList('workouts', any)).thenAnswer((_) async => true);
 
       await localStorageService.saveWorkout(workout);
 
-      verify(mockSharedPreferences.setStringList('workouts', [jsonEncode(workout.toJson())])).called(1);
+      verify(mockSharedPreferences.setStringList('workouts', jsonList)).called(1);
     });
 
     test('getWorkoutHistory returns stored workouts', () async {
       final workout = Workout(name: 'Leg Day', dayOfWeek: 'Tuesday', time: '17:00', type: 'Legs');
-      when(mockSharedPreferences.getStringList('workouts')).thenReturn([jsonEncode(workout.toJson())]);
+      final jsonList = [jsonEncode(workout.toJson())];
+      when(mockSharedPreferences.getStringList('workouts')).thenReturn(jsonList);
 
       final result = await localStorageService.getWorkoutHistory();
 
@@ -105,20 +113,22 @@ void main() {
     });
 
     test('getWorkoutHistory returns empty list when no data', () async {
-      when(mockSharedPreferences.getStringList('workouts')).thenReturn([]);
-
       final result = await localStorageService.getWorkoutHistory();
 
       expect(result, isEmpty);
     });
 
     test('initializeMockData sets mock workouts when none exist', () async {
+      final mockWorkouts = [
+        Workout(name: 'Leg Day', dayOfWeek: 'Tuesday', time: '17:00', type: 'Legs'),
+        Workout(name: 'Upper Body', dayOfWeek: 'Thursday', time: '18:00', type: 'Upper'),
+      ];
+      final jsonList = mockWorkouts.map((w) => jsonEncode(w.toJson())).toList();
       when(mockSharedPreferences.getStringList('workouts')).thenReturn(null);
-      when(mockSharedPreferences.setStringList('workouts', any)).thenAnswer((_) async => true);
 
       await localStorageService.initializeMockData();
 
-      verify(mockSharedPreferences.setStringList('workouts', any)).called(1);
+      verify(mockSharedPreferences.setStringList('workouts', jsonList)).called(1);
     });
   });
 }

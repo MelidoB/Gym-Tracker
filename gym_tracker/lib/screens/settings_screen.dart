@@ -1,4 +1,3 @@
-// lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gym_tracker/models/user_preferences.dart';
@@ -55,6 +54,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
     }
 
+    // Ensure preferredWorkoutType is valid
+    final validWorkoutTypes = ['General', 'Cardio', 'Strength', 'Flexibility'];
+    final currentWorkoutType = validWorkoutTypes.contains(_userPreferences!.preferredWorkoutType)
+        ? _userPreferences!.preferredWorkoutType
+        : 'General';
+
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Padding(
@@ -84,8 +89,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButton<String>(
-              value: _userPreferences!.preferredWorkoutType,
-              items: ['General', 'Cardio', 'Strength', 'Flexibility']
+              value: currentWorkoutType,
+              items: validWorkoutTypes
                   .map((type) => DropdownMenuItem(value: type, child: Text(type)))
                   .toList(),
               onChanged: (value) {
@@ -94,7 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
               },
             ),
-            Text('Preferred Workout: ${_userPreferences!.preferredWorkoutType}'),
+            Text('Preferred Workout: $currentWorkoutType'),
           ],
         ),
       ),

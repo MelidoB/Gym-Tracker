@@ -1,13 +1,14 @@
-// lib/models/user_preferences.dart
+import 'dart:convert';
+
 class UserPreferences {
   final String name;
   final bool useKg;
   final String preferredWorkoutType;
 
   UserPreferences({
-    this.name = '',
-    this.useKg = false,
-    this.preferredWorkoutType = 'General',
+    required this.name,
+    required this.useKg,
+    required this.preferredWorkoutType,
   });
 
   Map<String, dynamic> toJson() => {
@@ -17,8 +18,8 @@ class UserPreferences {
       };
 
   factory UserPreferences.fromJson(Map<String, dynamic> json) => UserPreferences(
-        name: json['name'] ?? '',
-        useKg: json['useKg'] ?? false,
-        preferredWorkoutType: json['preferredWorkoutType'] ?? 'General',
+        name: json['name'] as String? ?? '',
+        useKg: json['useKg'] as bool? ?? false,
+        preferredWorkoutType: json['preferredWorkoutType'] as String? ?? 'General',
       );
 }

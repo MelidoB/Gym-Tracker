@@ -1,59 +1,69 @@
-// test/screens/smart_dashboard_screen_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:gym_tracker/models/pre_workout.dart';
-import 'package:gym_tracker/models/workout.dart';
-import 'package:gym_tracker/screens/smart_dashboard_screen.dart';
+import 'package:gym_tracker/models/user_preferences.dart';
+import 'package:gym_tracker/screens/settings_screen.dart';
 import 'package:gym_tracker/services/local_storage_service.dart';
 import '../mocks.mocks.dart';
 
 void main() {
-  group('SmartDashboardScreen Widget Tests', () {
+  group('SettingsScreen Widget Tests', () {
     late MockLocalStorageService mockLocalStorageService;
 
     setUp(() {
       mockLocalStorageService = MockLocalStorageService();
 
-      // Mock getPreWorkout
+      // Mock getUserPreferences
+      when(mockLocalStorageService.getUserPreferences()).thenAnswer((_) async =>
+          UserPreferences(name: 'Test User', useKg: false, preferredWorkoutType: 'General'));
+
+      // Mock saveUserPreferences
+      when(mockLocalStorageService.saveUserPreferences(any)).thenAnswer((_) async => {});
+
+      // Mock getPreWorkout (for consistency with other tests)
       when(mockLocalStorageService.getPreWorkout()).thenAnswer((_) async =>
           PreWorkout(gymBagPrepped: false, energyLevel: 1, waterIntake: 500));
 
-      // Mock savePreWorkout
-      when(mockLocalStorageService.savePreWorkout(any)).thenAnswer((_) async => {});
-
-      // Mock getWorkoutHistory
-      when(mockLocalStorageService.getWorkoutHistory()).thenAnswer((_) async => [
-            Workout(
-              name: 'Leg Day',
-              dayOfWeek: 'Tuesday',
-              time: '17:00',
-              type: 'Legs',
-            ),
-          ]);
+      // Mock getWorkoutHistory (for consistency)
+      when(mockLocalStorageService.getWorkoutHistory()).thenAnswer((_) async => []);
     });
 
-    testWidgets('SmartDashboardScreen displays correctly', (WidgetTester tester) async {
+    testWidgets('SettingsScreen displays correctly', (WidgetTester tester) async {
       await tester.pumpWidget(
         Provider<LocalStorageService>(
           create: (_) => mockLocalStorageService,
-          child: const MaterialApp(home: smart_dashboard_screen()),
+          child: const MaterialApp(home: SettingsScreen()),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Smart Dashboard'), findsOneWidget);
-      expect(find.textContaining('Tuesday 17:00 → Leg Day?'), findsOneWidget);
-      expect(find.text('Rain → Indoor Routine'), findsOneWidget);
-      expect(find.text('Suggested: Hip Openers for 3 min'), findsOneWidget);
+      expect(find.text('Settings'), findsOneWidget);
+      expect(find.text('Test User'), findsOneWidget);
+      expect(find.text('General'), findsOneWidget);
     });
 
-    testWidgets('Tapping gym bag checkbox saves pre-workout', (WidgetTester tester) async {
+    testWidgets('Updating name saves preferences', (WidgetTester tester) async {
       await tester.pumpWidget(
         Provider<LocalStorageService>(
           create: (_) => mockLocalStorageService,
-          child: const MaterialApp(home: smart_dashboard_screen()),
+          child: const MaterialApp(home: SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'New User');
+      await tester.pump();
+
+      verify(mockLocalStorageService.saveUserPreferences(any)).called(1);
+    });
+
+    testWidgets('Toggling useKg saves preferences', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        Provider<LocalStorageService>(
+          create: (_) => mockLocalStorageService,
+          child: const MaterialApp(home: SettingsScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -61,52 +71,24 @@ void main() {
       await tester.tap(find.byType(Checkbox));
       await tester.pump();
 
-      verify(mockLocalStorageService.savePreWorkout(any)).called(1);
+      verify(mockLocalStorageService.saveUserPreferences(any)).called(1);
     });
 
-    testWidgets('Selecting energy level saves pre-workout', (WidgetTester tester) async {
+    testWidgets('Changing workout type saves preferences', (WidgetTester tester) async {
       await tester.pumpWidget(
         Provider<LocalStorageService>(
           create: (_) => mockLocalStorageService,
-          child: const MaterialApp(home: smart_dashboard_screen()),
+          child: const MaterialApp(home: SettingsScreen()),
         ),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('3'));
-      await tester.pump();
-
-      verify(mockLocalStorageService.savePreWorkout(any)).called(1);
-    });
-
-    testWidgets('Adjusting water intake slider saves pre-workout', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        Provider<LocalStorageService>(
-          create: (_) => mockLocalStorageService,
-          child: const MaterialApp(home: smart_dashboard_screen()),
-        ),
-      );
+      await tester.tap(find.byType(DropdownButton<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cardio').last);
       await tester.pumpAndSettle();
 
-      await tester.drag(find.byType(Slider), const Offset(100, 0));
-      await tester.pump();
-
-      verify(mockLocalStorageService.savePreWorkout(any)).called(1);
-    });
-
-    testWidgets('Navigates to SettingsScreen on settings icon tap', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        Provider<LocalStorageService>(
-          create: (_) => mockLocalStorageService,
-          child: const MaterialApp(home: smart_dashboard_screen()),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byIcon(Icons.settings));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Settings'), findsOneWidget);
+      verify(mockLocalStorageService.saveUserPreferences(any)).called(1);
     });
   });
 }

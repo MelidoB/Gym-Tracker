@@ -1,13 +1,14 @@
-// lib/models/pre_workout.dart
+import 'dart:convert';
+
 class PreWorkout {
   final bool gymBagPrepped;
   final int energyLevel;
   final double waterIntake;
 
   PreWorkout({
-    this.gymBagPrepped = false,
-    this.energyLevel = 1,
-    this.waterIntake = 500,
+    required this.gymBagPrepped,
+    required this.energyLevel,
+    required this.waterIntake,
   });
 
   Map<String, dynamic> toJson() => {
@@ -17,8 +18,8 @@ class PreWorkout {
       };
 
   factory PreWorkout.fromJson(Map<String, dynamic> json) => PreWorkout(
-        gymBagPrepped: json['gymBagPrepped'] ?? false,
-        energyLevel: json['energyLevel'] ?? 1,
-        waterIntake: (json['waterIntake'] ?? 500).toDouble(),
+        gymBagPrepped: json['gymBagPrepped'] as bool? ?? false,
+        energyLevel: json['energyLevel'] as int? ?? 1,
+        waterIntake: (json['waterIntake'] as num?)?.toDouble() ?? 500,
       );
 }

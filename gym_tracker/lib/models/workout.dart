@@ -1,4 +1,5 @@
-// lib/models/workout.dart
+import 'dart:convert';
+
 class Workout {
   final String name;
   final String dayOfWeek;
@@ -6,10 +7,10 @@ class Workout {
   final String type;
 
   Workout({
-    this.name = '',
-    this.dayOfWeek = '',
-    this.time = '',
-    this.type = '',
+    required this.name,
+    required this.dayOfWeek,
+    required this.time,
+    required this.type,
   });
 
   Map<String, dynamic> toJson() => {
@@ -20,9 +21,9 @@ class Workout {
       };
 
   factory Workout.fromJson(Map<String, dynamic> json) => Workout(
-        name: json['name'] ?? '',
-        dayOfWeek: json['dayOfWeek'] ?? '',
-        time: json['time'] ?? '',
-        type: json['type'] ?? '',
+        name: json['name'] as String? ?? '',
+        dayOfWeek: json['dayOfWeek'] as String? ?? '',
+        time: json['time'] as String? ?? '',
+        type: json['type'] as String? ?? '',
       );
 }

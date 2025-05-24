@@ -1,4 +1,3 @@
-// lib/screens/smart_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gym_tracker/models/pre_workout.dart';
@@ -117,6 +116,11 @@ class _SmartDashboardScreenState extends State<smart_dashboard_screen> {
                     divisions: 20,
                     label: '${_preWorkout!.waterIntake.round()} ml',
                     onChanged: (value) {
+                      setState(() {
+                        _preWorkout = _preWorkout!.copyWith(waterIntake: value);
+                      });
+                    },
+                    onChangeEnd: (value) {
                       _savePreWorkout(_preWorkout!.copyWith(waterIntake: value));
                     },
                   ),

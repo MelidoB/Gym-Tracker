@@ -1,102 +1,117 @@
+// lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:gym_tracker/models/user_preferences.dart';
 import 'package:gym_tracker/services/local_storage_service.dart';
-import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  _SettingsScreenState createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  late LocalStorageService _localStorageService;
-  UserPreferences _userPreferences = UserPreferences();
   late TextEditingController _nameController;
+  UserPreferences? _userPreferences;
+  bool _isLoading = true;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _localStorageService = Provider.of<LocalStorageService>(context);
-    _loadUserPreferences();
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+    _loadPreferences();
   }
 
-  Future<void> _loadUserPreferences() async {
-    final prefs = await _localStorageService.getUserPreferences();
+  Future<void> _loadPreferences() async {
+    final localStorage = Provider.of<LocalStorageService>(context, listen: false);
+    final prefs = await localStorage.getUserPreferences();
     setState(() {
       _userPreferences = prefs;
-      _nameController = TextEditingController(text: _userPreferences.name);
+      _nameController.text = prefs.name;
+      _isLoading = false;
     });
   }
 
-  Future<void> _saveUseKg(bool value) async {
-    _userPreferences.useKg = value;
-    await _localStorageService.saveUserPreferences(_userPreferences); // Changed from setUserPreferences
-    setState(() {});
+  Future<void> _savePreferences(UserPreferences prefs) async {
+    final localStorage = Provider.of<LocalStorageService>(context, listen: false);
+    await localStorage.saveUserPreferences(prefs);
+    setState(() {
+      _userPreferences = prefs;
+    });
   }
 
-  Future<void> _saveName(String value) async {
-    _userPreferences.name = value;
-    await _localStorageService.saveUserPreferences(_userPreferences); // Changed from setUserPreferences
-    setState(() {});
-  }
-
-  Future<void> _saveWorkoutType(String value) async {
-    _userPreferences.preferredWorkoutType = value;
-    await _localStorageService.saveUserPreferences(_userPreferences); // Changed from setUserPreferences
-    setState(() {});
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),
               onChanged: (value) {
-                _saveName(value);
+                _savePreferences(_userPreferences!.copyWith(name: value));
               },
             ),
+            const SizedBox(height: 16),
             Row(
               children: [
-                const Text('Use Kilograms'),
+                const Text('Use Kilograms:'),
                 Checkbox(
-                  value: _userPreferences.useKg,
-                  onChanged: (bool? newValue) {
-                    if (newValue != null) {
-                      _saveUseKg(newValue);
-                    }
+                  value: _userPreferences!.useKg,
+                  onChanged: (value) {
+                    _savePreferences(_userPreferences!.copyWith(useKg: value ?? false));
                   },
                 ),
+                Text(_userPreferences!.useKg ? 'Yes' : 'No'),
               ],
             ),
+            const SizedBox(height: 16),
             DropdownButton<String>(
-              value: _userPreferences.preferredWorkoutType,
-              items: ['General', 'Legs', 'Upper', 'Cardio'].map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  _saveWorkoutType(newValue);
+              value: _userPreferences!.preferredWorkoutType,
+              items: ['General', 'Cardio', 'Strength', 'Flexibility']
+                  .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  _savePreferences(_userPreferences!.copyWith(preferredWorkoutType: value));
                 }
               },
             ),
-            Text('Use Kilograms: ${_userPreferences.useKg ? 'Yes' : 'No'}'),
-            Text('Preferred Workout: ${_userPreferences.preferredWorkoutType}'),
+            Text('Preferred Workout: ${_userPreferences!.preferredWorkoutType}'),
           ],
         ),
       ),
+    );
+  }
+}
+
+extension on UserPreferences {
+  UserPreferences copyWith({
+    String? name,
+    bool? useKg,
+    String? preferredWorkoutType,
+  }) {
+    return UserPreferences(
+      name: name ?? this.name,
+      useKg: useKg ?? this.useKg,
+      preferredWorkoutType: preferredWorkoutType ?? this.preferredWorkoutType,
     );
   }
 }

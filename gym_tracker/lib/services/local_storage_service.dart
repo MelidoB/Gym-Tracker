@@ -1,39 +1,16 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import '../models/workout.dart';
-import '../models/pre_workout.dart';
-import '../models/user_preferences.dart';
+// lib/services/local_storage_service.dart
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gym_tracker/models/pre_workout.dart';
+import 'package:gym_tracker/models/user_preferences.dart';
+import 'package:gym_tracker/models/workout.dart';
 
 class LocalStorageService {
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+  Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
 
-  Future<void> setPreferences(String key, dynamic value) async {
-    final prefs = await _prefs;
-    if (value is bool) {
-      await prefs.setBool(key, value);
-    } else if (value is String) {
-      await prefs.setString(key, value);
-    } else if (value is int) {
-      await prefs.setInt(key, value);
-    }
-  }
-
-  Future<dynamic> getPreferences(String key) async {
-    final prefs = await _prefs;
-    return prefs.get(key);
-  }
-
-  Future<void> saveWorkout(Workout workout) async {
-    final prefs = await _prefs;
-    List<String> workouts = prefs.getStringList('workouts') ?? [];
-    workouts.add(jsonEncode(workout.toJson()));
-    await prefs.setStringList('workouts', workouts);
-  }
-
-  Future<List<Workout>> getWorkoutHistory() async {
-    final prefs = await _prefs;
-    final workouts = prefs.getStringList('workouts') ?? [];
-    return workouts.map((w) => Workout.fromJson(jsonDecode(w))).toList();
+  // For testing: Set SharedPreferences instance
+  void setPrefsForTesting(SharedPreferences prefs) {
+    _prefs = Future.value(prefs);
   }
 
   Future<void> savePreWorkout(PreWorkout preWorkout) async {
@@ -43,45 +20,51 @@ class LocalStorageService {
 
   Future<PreWorkout> getPreWorkout() async {
     final prefs = await _prefs;
-    final preWorkoutJson = prefs.getString('preWorkout');
-    if (preWorkoutJson != null) {
-      return PreWorkout.fromJson(jsonDecode(preWorkoutJson));
+    final jsonString = prefs.getString('preWorkout');
+    if (jsonString == null) {
+      return PreWorkout();
     }
-    return PreWorkout();
+    return PreWorkout.fromJson(jsonDecode(jsonString));
   }
 
-  Future<void> saveUserPreferences(UserPreferences prefs) async {
-    final sharedPrefs = await _prefs;
-    await sharedPrefs.setString('userPreferences', jsonEncode(prefs.toJson()));
+  Future<void> saveUserPreferences(UserPreferences preferences) async {
+    final prefs = await _prefs;
+    await prefs.setString('userPreferences', jsonEncode(preferences.toJson()));
   }
 
   Future<UserPreferences> getUserPreferences() async {
     final prefs = await _prefs;
-    final prefsJson = prefs.getString('userPreferences');
-    if (prefsJson != null) {
-      return UserPreferences.fromJson(jsonDecode(prefsJson));
+    final jsonString = prefs.getString('userPreferences');
+    if (jsonString == null) {
+      return UserPreferences();
     }
-    return UserPreferences();
+    return UserPreferences.fromJson(jsonDecode(jsonString));
   }
 
-  Future<void> clearData() async {
+  Future<void> saveWorkout(Workout workout) async {
     final prefs = await _prefs;
-    await prefs.clear();
+    final workouts = await getWorkoutHistory();
+    workouts.add(workout);
+    final jsonList = workouts.map((w) => jsonEncode(w.toJson())).toList();
+    await prefs.setStringList('workouts', jsonList);
+  }
+
+  Future<List<Workout>> getWorkoutHistory() async {
+    final prefs = await _prefs;
+    final jsonList = prefs.getStringList('workouts') ?? [];
+    return jsonList.map((jsonString) => Workout.fromJson(jsonDecode(jsonString))).toList();
   }
 
   Future<void> initializeMockData() async {
     final prefs = await _prefs;
-    if (prefs.getStringList('workouts') == null) {
+    final workouts = prefs.getStringList('workouts');
+    if (workouts == null || workouts.isEmpty) {
       final mockWorkouts = [
         Workout(name: 'Leg Day', dayOfWeek: 'Tuesday', time: '17:00', type: 'Legs'),
-        Workout(name: 'Upper Body', dayOfWeek: 'Tuesday', time: '17:00', type: 'Upper'),
-        Workout(name: 'Cardio', dayOfWeek: 'Tuesday', time: '17:00', type: 'Cardio'),
+        Workout(name: 'Upper Body', dayOfWeek: 'Thursday', time: '18:00', type: 'Upper'),
       ];
-      await prefs.setStringList(
-        'workouts',
-        mockWorkouts.map((w) => jsonEncode(w.toJson())).toList(),
-      );
+      final jsonList = mockWorkouts.map((w) => jsonEncode(w.toJson())).toList();
+      await prefs.setStringList('workouts', jsonList);
     }
   }
-
 }

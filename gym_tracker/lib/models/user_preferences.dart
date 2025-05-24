@@ -1,7 +1,8 @@
+// lib/models/user_preferences.dart
 class UserPreferences {
-  String? name;
-  bool useKg;
-  String preferredWorkoutType;
+  final String name;
+  final bool useKg;
+  final String preferredWorkoutType;
 
   UserPreferences({
     this.name = '',
@@ -9,19 +10,15 @@ class UserPreferences {
     this.preferredWorkoutType = 'General',
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'useKg': useKg,
-      'preferredWorkoutType': preferredWorkoutType,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'useKg': useKg,
+        'preferredWorkoutType': preferredWorkoutType,
+      };
 
-  factory UserPreferences.fromJson(Map<String, dynamic> json) {
-    return UserPreferences(
-      name: json['name'] ?? '',
-      useKg: json['useKg'] ?? false,
-      preferredWorkoutType: json['preferredWorkoutType'] ?? 'General',
-    );
-  }
+  factory UserPreferences.fromJson(Map<String, dynamic> json) => UserPreferences(
+        name: json['name'] ?? '',
+        useKg: json['useKg'] ?? false,
+        preferredWorkoutType: json['preferredWorkoutType'] ?? 'General',
+      );
 }

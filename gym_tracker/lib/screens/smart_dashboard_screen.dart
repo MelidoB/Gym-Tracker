@@ -1,65 +1,63 @@
+// lib/screens/smart_dashboard_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/workout.dart';
-import '../models/weather.dart';
-import '../models/pre_workout.dart';
-import '../models/warm_up.dart';
-import '../services/local_storage_service.dart';
-import 'settings_screen.dart';
-import 'package:intl/intl.dart';
-import 'dart:convert';
+import 'package:gym_tracker/models/pre_workout.dart';
+import 'package:gym_tracker/models/warm_up.dart';
+import 'package:gym_tracker/models/weather.dart';
+import 'package:gym_tracker/models/workout.dart';
+import 'package:gym_tracker/screens/settings_screen.dart';
+import 'package:gym_tracker/services/local_storage_service.dart';
+import 'package:gym_tracker/widgets/reusable_widget.dart';
 
 class smart_dashboard_screen extends StatefulWidget {
   const smart_dashboard_screen({super.key});
 
   @override
-  State<smart_dashboard_screen> createState() => _smart_dashboard_screenState();
+  _SmartDashboardScreenState createState() => _SmartDashboardScreenState();
 }
 
-class _smart_dashboard_screenState extends State<smart_dashboard_screen> {
-  late LocalStorageService _localStorageService;
-  Workout? _suggestedWorkout;
-  final Weather _weather = Weather(condition: 'Rain', recommendIndoor: true); // Mock
-  PreWorkout _preWorkout = PreWorkout();
-  WarmUp? _warmUp;
+class _SmartDashboardScreenState extends State<smart_dashboard_screen> {
+  PreWorkout? _preWorkout;
+  List<Workout> _workoutHistory = [];
+  bool _isLoading = true;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _localStorageService = Provider.of<LocalStorageService>(context);
-    _loadSuggestedWorkout();
-    _loadPreWorkout();
+  void initState() {
+    super.initState();
+    _loadData();
   }
 
-  Future<void> _loadSuggestedWorkout() async {
-    final workouts = await _localStorageService.getWorkoutHistory();
-    final now = DateTime.now();
-    final currentDay = DateFormat('EEEE').format(now);
-    final recentWorkouts = workouts
-        .where((w) => w.dayOfWeek == currentDay)
-        .take(3)
-        .toList();
+  Future<void> _loadData() async {
+    final localStorage = Provider.of<LocalStorageService>(context, listen: false);
+    final preWorkout = await localStorage.getPreWorkout();
+    final workoutHistory = await localStorage.getWorkoutHistory();
     setState(() {
-      _suggestedWorkout = recentWorkouts.isNotEmpty ? recentWorkouts.first : null;
-      _warmUp = _suggestedWorkout != null
-          ? WarmUp.suggestForWorkoutType(_suggestedWorkout!.type)
-          : null;
+      _preWorkout = preWorkout;
+      _workoutHistory = workoutHistory;
+      _isLoading = false;
     });
   }
 
-  Future<void> _loadPreWorkout() async {
-    final preWorkout = await _localStorageService.getPreWorkout();
+  Future<void> _savePreWorkout(PreWorkout preWorkout) async {
+    final localStorage = Provider.of<LocalStorageService>(context, listen: false);
+    await localStorage.savePreWorkout(preWorkout);
     setState(() {
       _preWorkout = preWorkout;
     });
   }
 
-  Future<void> _savePreWorkout() async {
-    await _localStorageService.savePreWorkout(_preWorkout);
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final weather = Weather(condition: 'Rain', recommendIndoor: true);
+    final suggestedWarmUp = WarmUp.suggestForWorkoutType(
+        _workoutHistory.isNotEmpty ? _workoutHistory.first.type : 'General');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Smart Dashboard'),
@@ -69,91 +67,102 @@ class _smart_dashboard_screenState extends State<smart_dashboard_screen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
             },
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _suggestedWorkout != null
-                  ? '${_suggestedWorkout!.dayOfWeek} ${_suggestedWorkout!.time} → ${_suggestedWorkout!.name}?'
-                  : 'No workout suggestion',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '${_weather.condition} → ${_weather.recommendIndoor ? 'Indoor Routine' : 'Outdoor Routine'}',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 24),
-            const Text('One-Tap Prep', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Row(
-              children: [
-                const Text('Prepped? (Gym Bag)'),
-                Checkbox(
-                  value: _preWorkout.gymBagPrepped,
-                  onChanged: (bool? value) {
-                    if (value != null) {
-                      setState(() {
-                        _preWorkout.gymBagPrepped = value;
-                      });
-                      _savePreWorkout();
-                    }
-                  },
-                ),
-              ],
-            ),
-            const Text('Energy Level (1-5):'),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(5, (index) => index + 1).map((level) {
-                return ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _preWorkout.energyLevel = level;
-                    });
-                    _savePreWorkout();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _preWorkout.energyLevel == level ? Colors.blue : null,
+            ReusableWidget(
+              title: 'Pre-Workout Checklist',
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Text('Gym Bag Prepped:'),
+                      Checkbox(
+                        value: _preWorkout!.gymBagPrepped,
+                        onChanged: (value) {
+                          _savePreWorkout(_preWorkout!.copyWith(gymBagPrepped: value ?? false));
+                        },
+                      ),
+                    ],
                   ),
-                  child: Text('$level'),
-                );
-              }).toList(),
+                  const Text('Energy Level:'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [1, 2, 3, 4, 5].map((level) {
+                      return ElevatedButton(
+                        onPressed: () {
+                          _savePreWorkout(_preWorkout!.copyWith(energyLevel: level));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _preWorkout!.energyLevel == level
+                              ? Colors.blue
+                              : Colors.grey,
+                        ),
+                        child: Text('$level'),
+                      );
+                    }).toList(),
+                  ),
+                  Slider(
+                    value: _preWorkout!.waterIntake,
+                    min: 0,
+                    max: 2000,
+                    divisions: 20,
+                    label: '${_preWorkout!.waterIntake.round()} ml',
+                    onChanged: (value) {
+                      _savePreWorkout(_preWorkout!.copyWith(waterIntake: value));
+                    },
+                  ),
+                  Text('Water Intake: ${_preWorkout!.waterIntake.round()} ml'),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
-            const Text('Water Intake (ml):'),
-            Slider(
-              value: _preWorkout.waterIntake.toDouble(),
-              min: 0,
-              max: 2000,
-              divisions: 8,
-              label: '${_preWorkout.waterIntake} ml',
-              onChanged: (double value) {
-                setState(() {
-                  _preWorkout.waterIntake = value.round();
-                });
-                _savePreWorkout();
-              },
+            ReusableWidget(
+              title: 'Workout History',
+              child: _workoutHistory.isEmpty
+                  ? const Text('No workouts recorded.')
+                  : Column(
+                      children: _workoutHistory.map((workout) {
+                        return Text(
+                            '${workout.dayOfWeek} ${workout.time} → ${workout.name}?');
+                      }).toList(),
+                    ),
             ),
-            Text('Water: ${_preWorkout.waterIntake} ml'),
-            const SizedBox(height: 24),
-            const Text('AI Warm-Up', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text(
-              _warmUp != null
-                  ? 'Suggested: ${_warmUp!.name} for ${_warmUp!.duration}'
-                  : 'No warm-up suggestion',
-              style: const TextStyle(fontSize: 18),
+            const SizedBox(height: 16),
+            ReusableWidget(
+              title: 'Weather Recommendation',
+              child: Text('${weather.condition} → ${weather.recommendIndoor ? 'Indoor' : 'Outdoor'} Routine'),
+            ),
+            const SizedBox(height: 16),
+            ReusableWidget(
+              title: 'Suggested Warm-Up',
+              child: Text('Suggested: ${suggestedWarmUp.name} for ${suggestedWarmUp.duration}'),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+extension on PreWorkout {
+  PreWorkout copyWith({
+    bool? gymBagPrepped,
+    int? energyLevel,
+    double? waterIntake,
+  }) {
+    return PreWorkout(
+      gymBagPrepped: gymBagPrepped ?? this.gymBagPrepped,
+      energyLevel: energyLevel ?? this.energyLevel,
+      waterIntake: waterIntake ?? this.waterIntake,
     );
   }
 }

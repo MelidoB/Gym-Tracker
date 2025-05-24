@@ -1,87 +1,112 @@
+// test/screens/smart_dashboard_screen_test.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
-import 'package:gym_tracker/screens/settings_screen.dart';
-import 'package:gym_tracker/services/local_storage_service.dart';
-import 'package:gym_tracker/models/user_preferences.dart';
 import 'package:mockito/mockito.dart';
-
-// Mock class for LocalStorageService
-class MockLocalStorageService extends Mock implements LocalStorageService {
-  UserPreferences _userPreferences = UserPreferences(name: 'Test User', useKg: true, preferredWorkoutType: 'General');
-
-  @override
-  Future<UserPreferences> getUserPreferences() async {
-    return _userPreferences;
-  }
-
-  @override
-  Future<void> saveUserPreferences(UserPreferences prefs) async {
-    _userPreferences = prefs; // Store the passed UserPreferences
-  }
-}
+import 'package:provider/provider.dart';
+import 'package:gym_tracker/models/pre_workout.dart';
+import 'package:gym_tracker/models/workout.dart';
+import 'package:gym_tracker/screens/smart_dashboard_screen.dart';
+import 'package:gym_tracker/services/local_storage_service.dart';
+import '../mocks.mocks.dart';
 
 void main() {
-  group('SettingsScreen Widget Tests', () {
+  group('SmartDashboardScreen Widget Tests', () {
     late MockLocalStorageService mockLocalStorageService;
 
     setUp(() {
       mockLocalStorageService = MockLocalStorageService();
+
+      // Mock getPreWorkout
+      when(mockLocalStorageService.getPreWorkout()).thenAnswer((_) async =>
+          PreWorkout(gymBagPrepped: false, energyLevel: 1, waterIntake: 500));
+
+      // Mock savePreWorkout
+      when(mockLocalStorageService.savePreWorkout(any)).thenAnswer((_) async => {});
+
+      // Mock getWorkoutHistory
+      when(mockLocalStorageService.getWorkoutHistory()).thenAnswer((_) async => [
+            Workout(
+              name: 'Leg Day',
+              dayOfWeek: 'Tuesday',
+              time: '17:00',
+              type: 'Legs',
+            ),
+          ]);
     });
 
-    testWidgets('Renders correctly', (WidgetTester tester) async {
-      // Arrange
+    testWidgets('SmartDashboardScreen displays correctly', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Provider<LocalStorageService>(
-            create: (_) => mockLocalStorageService,
-            child: const SettingsScreen(),
-          ),
+        Provider<LocalStorageService>(
+          create: (_) => mockLocalStorageService,
+          child: const MaterialApp(home: smart_dashboard_screen()),
         ),
       );
+      await tester.pumpAndSettle();
 
-      // Act
-      await tester.pumpAndSettle(); // Wait for async operations to complete
-
-      // Assert
-      expect(find.text('Settings'), findsOneWidget); // AppBar title
-      expect(find.text('Name'), findsOneWidget); // TextField label
-      expect(find.text('Test User'), findsOneWidget); // Initial name from mock
-      expect(find.text('Use Kilograms'), findsOneWidget);
-      expect(find.byType(Checkbox), findsOneWidget);
-      expect(find.byType(DropdownButton<String>), findsOneWidget);
+      expect(find.text('Smart Dashboard'), findsOneWidget);
+      expect(find.textContaining('Tuesday 17:00 → Leg Day?'), findsOneWidget);
+      expect(find.text('Rain → Indoor Routine'), findsOneWidget);
+      expect(find.text('Suggested: Hip Openers for 3 min'), findsOneWidget);
     });
 
-    testWidgets('Saves preferences on input', (WidgetTester tester) async {
-      // Arrange
+    testWidgets('Tapping gym bag checkbox saves pre-workout', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Provider<LocalStorageService>(
-            create: (_) => mockLocalStorageService,
-            child: const SettingsScreen(),
-          ),
+        Provider<LocalStorageService>(
+          create: (_) => mockLocalStorageService,
+          child: const MaterialApp(home: smart_dashboard_screen()),
         ),
       );
+      await tester.pumpAndSettle();
 
-      await tester.pumpAndSettle(); // Wait for async operations
-
-      // Act
-      await tester.enterText(find.byType(TextField), 'New User');
-      await tester.pump();
-
-      // Simulate checkbox tap
       await tester.tap(find.byType(Checkbox));
       await tester.pump();
 
-      // Simulate dropdown selection
-      await tester.tap(find.byType(DropdownButton<String>));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Cardio').last);
+      verify(mockLocalStorageService.savePreWorkout(any)).called(1);
+    });
+
+    testWidgets('Selecting energy level saves pre-workout', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        Provider<LocalStorageService>(
+          create: (_) => mockLocalStorageService,
+          child: const MaterialApp(home: smart_dashboard_screen()),
+        ),
+      );
       await tester.pumpAndSettle();
 
-      // Assert
-      expect(find.text('New User'), findsOneWidget);
-      verify(mockLocalStorageService.saveUserPreferences(argThat(isA<UserPreferences>()))).called(2); // Name and checkbox
+      await tester.tap(find.text('3'));
+      await tester.pump();
+
+      verify(mockLocalStorageService.savePreWorkout(any)).called(1);
+    });
+
+    testWidgets('Adjusting water intake slider saves pre-workout', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        Provider<LocalStorageService>(
+          create: (_) => mockLocalStorageService,
+          child: const MaterialApp(home: smart_dashboard_screen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.drag(find.byType(Slider), const Offset(100, 0));
+      await tester.pump();
+
+      verify(mockLocalStorageService.savePreWorkout(any)).called(1);
+    });
+
+    testWidgets('Navigates to SettingsScreen on settings icon tap', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        Provider<LocalStorageService>(
+          create: (_) => mockLocalStorageService,
+          child: const MaterialApp(home: smart_dashboard_screen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Settings'), findsOneWidget);
     });
   });
 }

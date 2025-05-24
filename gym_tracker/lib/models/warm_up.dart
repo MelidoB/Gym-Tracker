@@ -1,31 +1,27 @@
+// lib/models/warm_up.dart
 class WarmUp {
-  String name;
-  String duration;
-  String workoutType;
+  final String name;
+  final String duration;
+  final String workoutType;
 
   WarmUp({
-    required this.name,
-    required this.duration,
-    required this.workoutType,
+    this.name = '',
+    this.duration = '',
+    this.workoutType = '',
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'duration': duration,
-      'workoutType': workoutType,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'duration': duration,
+        'workoutType': workoutType,
+      };
 
-  factory WarmUp.fromJson(Map<String, dynamic> json) {
-    return WarmUp(
-      name: json['name'] ?? '',
-      duration: json['duration'] ?? '',
-      workoutType: json['workoutType'] ?? '',
-    );
-  }
+  factory WarmUp.fromJson(Map<String, dynamic> json) => WarmUp(
+        name: json['name'] ?? '',
+        duration: json['duration'] ?? '',
+        workoutType: json['workoutType'] ?? '',
+      );
 
-  // Simple rule-based suggestion
   static WarmUp suggestForWorkoutType(String workoutType) {
     switch (workoutType) {
       case 'Legs':

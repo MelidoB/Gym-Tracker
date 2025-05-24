@@ -1,27 +1,25 @@
+import 'dart:convert';
+
 class UserPreferences {
-  String? name;
-  bool useKg;
-  String preferredWorkoutType;
+  final String name;
+  final bool useKg;
+  final String preferredWorkoutType;
 
   UserPreferences({
-    this.name = '',
-    this.useKg = false,
-    this.preferredWorkoutType = 'General',
+    required this.name,
+    required this.useKg,
+    required this.preferredWorkoutType,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'useKg': useKg,
-      'preferredWorkoutType': preferredWorkoutType,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'useKg': useKg,
+        'preferredWorkoutType': preferredWorkoutType,
+      };
 
-  factory UserPreferences.fromJson(Map<String, dynamic> json) {
-    return UserPreferences(
-      name: json['name'] ?? '',
-      useKg: json['useKg'] ?? false,
-      preferredWorkoutType: json['preferredWorkoutType'] ?? 'General',
-    );
-  }
+  factory UserPreferences.fromJson(Map<String, dynamic> json) => UserPreferences(
+        name: json['name'] as String? ?? '',
+        useKg: json['useKg'] as bool? ?? false,
+        preferredWorkoutType: json['preferredWorkoutType'] as String? ?? 'General',
+      );
 }

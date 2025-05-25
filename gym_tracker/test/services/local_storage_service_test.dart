@@ -51,7 +51,7 @@ void main() {
       final jsonString = jsonEncode(soreness.toJson());
       when(mockPrefs.getString('soreness_abc123')).thenReturn(jsonString);
 
-      final result = await localStorageService.getSoreness('abc123');
+      final result = await localStorageService.getSoreness('Chest Day');
 
       expect(result.workoutId, 'abc123');
       expect(result.sorenessLevel, 4);
@@ -60,7 +60,7 @@ void main() {
     });
 
     test('Returns default soreness when no data exists', () async {
-      final result = await localStorageService.getSoreness('abc123');
+      final result = await localStorageService.getSoreness('Chest Day');
 
       expect(result.workoutId, 'abc123');
       expect(result.sorenessLevel, 0);

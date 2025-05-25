@@ -27,7 +27,7 @@ void main() {
             ),
           ]);
 
-      when(mockLocalStorageService.getSoreness('abc123')).thenAnswer((_) async =>
+      when(mockLocalStorageService.getSoreness('Chest Day')).thenAnswer((_) async =>
           PostWorkoutRecovery(
             workoutId: 'abc123',
             sorenessLevel: 4,

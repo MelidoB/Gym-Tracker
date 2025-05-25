@@ -1,4 +1,3 @@
-// lib/models/warm_up.dart
 class WarmUp {
   final String name;
   final String duration;
@@ -23,15 +22,31 @@ class WarmUp {
       );
 
   static WarmUp suggestForWorkoutType(String workoutType) {
-    switch (workoutType) {
-      case 'Legs':
-        return WarmUp(name: 'Hip Openers', duration: '3 min', workoutType: 'Legs');
-      case 'Upper':
-        return WarmUp(name: 'Arm Circles', duration: '2 min', workoutType: 'Upper');
-      case 'Cardio':
-        return WarmUp(name: 'Jumping Jacks', duration: '2 min', workoutType: 'Cardio');
+    switch (workoutType.toLowerCase()) {
+      case 'legs':
+        return WarmUp(
+          name: 'Lower Body Dynamic Warmup',
+          duration: '5-7 minutes',
+          workoutType: 'Legs',
+        );
+      case 'upper':
+        return WarmUp(
+          name: 'Upper Body Mobility Routine',
+          duration: '5 minutes',
+          workoutType: 'Upper',
+        );
+      case 'cardio':
+        return WarmUp(
+          name: 'Cardio Warmup',
+          duration: '3-5 minutes',
+          workoutType: 'Cardio',
+        );
       default:
-        return WarmUp(name: 'General Stretch', duration: '2 min', workoutType: 'General');
+        return WarmUp(
+          name: 'General Full Body Warmup',
+          duration: '5 minutes',
+          workoutType: 'General',
+        );
     }
   }
 }

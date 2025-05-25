@@ -176,4 +176,24 @@ void main() {
       expect(find.textContaining('Suggested: Hip Openers for 3 min'), findsOneWidget);
     });
   });
-}
+
+    testWidgets('Navigates to WarmupScreen when suggestion is tapped', (tester) async {
+    await tester.pumpWidget(
+      Provider<LocalStorageService>(
+        create: (_) => mockLocalStorageService,
+        child: MaterialApp(
+          home: const smart_dashboard_screen(),
+          routes: {
+            '/warmup': (context) => const WarmupScreen(warmUp: WarmUp()),
+          },
+        ),
+      ),
+    );
+
+    // Tap on the warm-up suggestion widget
+    await tester.tap(find.text('Suggested: Hip Openers for 3 min'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(WarmupScreen), findsOneWidget);
+  });
+} 

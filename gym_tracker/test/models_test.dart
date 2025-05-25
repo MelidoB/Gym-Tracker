@@ -1,4 +1,3 @@
-// test/models_test.dart
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_tracker/models/pre_workout.dart';
 import 'package:gym_tracker/models/user_preferences.dart';
@@ -66,7 +65,7 @@ void main() {
     });
 
     test('WarmUp serialization and deserialization', () {
-      final warmUp = WarmUp(name: 'Hip Openers', duration: '3 min', workoutType: 'Legs');
+      final warmUp = WarmUp(name: 'Lower Body Dynamic Warmup', duration: '5-7 minutes', workoutType: 'Legs');
       final json = warmUp.toJson();
       final decoded = WarmUp.fromJson(json);
 
@@ -84,10 +83,10 @@ void main() {
     });
 
     test('WarmUp suggestForWorkoutType returns correct suggestion', () {
-      expect(WarmUp.suggestForWorkoutType('Legs').name, 'Hip Openers');
-      expect(WarmUp.suggestForWorkoutType('Upper').name, 'Arm Circles');
-      expect(WarmUp.suggestForWorkoutType('Cardio').name, 'Jumping Jacks');
-      expect(WarmUp.suggestForWorkoutType('Unknown').name, 'General Stretch');
+      expect(WarmUp.suggestForWorkoutType('Legs').name, 'Lower Body Dynamic Warmup'); // Fixed
+      expect(WarmUp.suggestForWorkoutType('Upper').name, 'Upper Body Mobility Routine'); // Fixed
+      expect(WarmUp.suggestForWorkoutType('Cardio').name, 'Cardio Warmup'); // Fixed
+      expect(WarmUp.suggestForWorkoutType('Unknown').name, 'General Full Body Warmup'); // Fixed
     });
 
     test('Weather serialization and deserialization', () {

@@ -27,13 +27,13 @@ void main() {
             ),
           ]);
 
-      when(mockLocalStorageService.getSoreness('abc123')).thenAnswer((_) async =>
-          PostWorkoutRecovery(
-            workoutId: 'abc123',
-            sorenessLevel: 4,
-            postWorkoutEnergy: 3,
-            recoveryNotes: 'Moderate soreness in quads',
-          ));
+      when(mockLocalStorageService.getSoreness('Chest Day')).thenAnswer((_) async =>
+    PostWorkoutRecovery(
+      workoutId: 'Chest Day',  // Fixed to match parameter
+      sorenessLevel: 4,
+      postWorkoutEnergy: 3,
+      recoveryNotes: 'Moderate soreness in quads',
+    ));
 
       when(mockLocalStorageService.getUserPreferences()).thenAnswer((_) async =>
           UserPreferences(name: 'Test User', useKg: false, preferredWorkoutType: 'General'));

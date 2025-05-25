@@ -142,4 +142,12 @@ class LocalStorageService {
       }
     }
   }
+
+  // Add to existing class
+Future<void> updateExerciseWeights(Map<String, double> newWeights) async {
+  final prefs = await getUserPreferences();
+  await saveUserPreferences(prefs.copyWith(
+    lastWeights: {...prefs.lastWeights, ...newWeights},
+  ));
+}
 }

@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           useMaterial3: true,
         ),
-        home: const smart_dashboard_screen(),
+        home: const SmartDashboardScreen(),
       ),
     );
   }

@@ -33,9 +33,10 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
     final localStorage = context.read<LocalStorageService>();
     final prefs = await localStorage.getUserPreferences();
     final workouts = await localStorage.getWorkoutHistory();
+    final preWorkout = await localStorage.getPreWorkout();
 
     setState(() {
-      _preWorkout = await localStorage.getPreWorkout();
+      _preWorkout = preWorkout;
       _workoutHistory = workouts;
       _weightSuggestions = AIService.suggestNextWeights(
         workoutHistory: workouts,

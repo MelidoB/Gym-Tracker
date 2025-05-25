@@ -29,7 +29,7 @@ void main() {
 
     test('Saves soreness data correctly', () async {
       final soreness = PostWorkoutRecovery(
-        workoutId: 'abc123',
+        workoutId: 'Chest Day', // Fixed: Match workoutId with test input
         sorenessLevel: 4,
         postWorkoutEnergy: 3,
         recoveryNotes: 'Moderate soreness in quads',
@@ -38,22 +38,22 @@ void main() {
 
       await localStorageService.saveSoreness(soreness);
 
-      verify(mockPrefs.setString('soreness_abc123', jsonString)).called(1);
+      verify(mockPrefs.setString('soreness_Chest Day', jsonString)).called(1);
     });
 
     test('Retrieves soreness data correctly', () async {
       final soreness = PostWorkoutRecovery(
-        workoutId: 'abc123',
+        workoutId: 'Chest Day', // Fixed: Match workoutId
         sorenessLevel: 4,
         postWorkoutEnergy: 3,
         recoveryNotes: 'Moderate soreness in quads',
       );
       final jsonString = jsonEncode(soreness.toJson());
-      when(mockPrefs.getString('soreness_abc123')).thenReturn(jsonString);
+      when(mockPrefs.getString('soreness_Chest Day')).thenReturn(jsonString);
 
       final result = await localStorageService.getSoreness('Chest Day');
 
-      expect(result.workoutId, 'abc123');
+      expect(result.workoutId, 'Chest Day');
       expect(result.sorenessLevel, 4);
       expect(result.postWorkoutEnergy, 3);
       expect(result.recoveryNotes, 'Moderate soreness in quads');
@@ -62,7 +62,7 @@ void main() {
     test('Returns default soreness when no data exists', () async {
       final result = await localStorageService.getSoreness('Chest Day');
 
-      expect(result.workoutId, 'abc123');
+      expect(result.workoutId, 'Chest Day'); // Fixed: Expect correct workoutId
       expect(result.sorenessLevel, 0);
       expect(result.postWorkoutEnergy, 0);
       expect(result.recoveryNotes, '');

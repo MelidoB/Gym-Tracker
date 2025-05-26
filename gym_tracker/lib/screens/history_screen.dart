@@ -1,3 +1,4 @@
+// lib/screens/history_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gym_tracker/models/workout.dart';
@@ -37,6 +38,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           sorenessLevel: 0,
           postWorkoutEnergy: workout.postWorkoutEnergy,
           recoveryNotes: '',
+          waterIntake: workout.waterIntake,
         );
       }
     }
@@ -76,6 +78,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               sorenessLevel: 0,
                               postWorkoutEnergy: workout.postWorkoutEnergy,
                               recoveryNotes: 'No recovery data',
+                              waterIntake: workout.waterIntake,
                             );
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,6 +86,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             Text('${workout.dayOfWeek} ${workout.time} → ${workout.name}'),
                             Text('Soreness: ${soreness.sorenessLevel}'),
                             Text('Post-Workout Energy: ${soreness.postWorkoutEnergy}'),
+                            Text('Water Intake: ${soreness.waterIntake.round()}ml'),
                             Text('Notes: ${soreness.recoveryNotes.isEmpty ? 'None' : soreness.recoveryNotes}'),
                             const SizedBox(height: 8),
                           ],

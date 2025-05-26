@@ -1,9 +1,12 @@
+// lib/screens/smart_dashboard_screen.dart
 import 'package:flutter/material.dart';
+import 'package:gym_tracker/screens/water_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:gym_tracker/models/pre_workout.dart';
 import 'package:gym_tracker/models/warm_up.dart';
 import 'package:gym_tracker/models/weather.dart';
 import 'package:gym_tracker/models/workout.dart';
+import 'package:gym_tracker/screens/prep_check_screen.dart';
 import 'package:gym_tracker/screens/settings_screen.dart';
 import 'package:gym_tracker/screens/warmup_screen.dart';
 import 'package:gym_tracker/services/ai_service.dart';
@@ -54,11 +57,18 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
           : Column(
               children: _weightSuggestions.entries.map((entry) {
                 final latestWorkout = _workoutHistory.reversed
-                    .firstWhere((w) => w.name == entry.key);
+                    .firstWhere((w) => w.name == entry.key,
+                        orElse: () => Workout(
+                            name: entry.key,
+                            dayOfWeek: '',
+                            time: '',
+                            type: ''));
                 return ListTile(
                   title: Text(entry.key),
                   subtitle: Text(
-                    'Last session: ${latestWorkout.reps} reps @ ${latestWorkout.weight}kg',
+                    latestWorkout.name.isEmpty
+                        ? 'No previous session'
+                        : 'Last session: ${latestWorkout.reps} reps @ ${latestWorkout.weight}kg',
                   ),
                   trailing: Text(
                     '${entry.value.toStringAsFixed(1)}kg',
@@ -72,8 +82,8 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
 
   Widget _buildWarmupRecommendation() {
     final warmUp = WarmUp.suggestForWorkoutType(
-      _workoutHistory.isNotEmpty ? _workoutHistory.first.type : 'General');
-    
+        _workoutHistory.isNotEmpty ? _workoutHistory.first.type : 'General');
+
     return ReusableWidget(
       title: 'Recommended Warmup',
       child: Column(
@@ -102,16 +112,34 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
       title: 'Pre-Workout Checklist',
       child: Column(
         children: [
-          Row(
-            children: [
-              const Text('Gym Bag Ready:'),
-              Checkbox(
-                value: _preWorkout?.gymBagPrepped ?? false,
-                onChanged: (value) => _savePreWorkout(
-                  _preWorkout!.copyWith(gymBagPrepped: value),
-                ),
-              ),
-            ],
+          CheckboxListTile(
+            title: const Text('Gym Bag Prepped'),
+            value: _preWorkout?.gymBagPrepped ?? false,
+            onChanged: (value) {
+              if (value != null) {
+                _savePreWorkout(_preWorkout!.copyWith(gymBagPrepped: value));
+              }
+            },
+          ),
+          CheckboxListTile(
+            title: const Text('Workout Clothes Ready'),
+            value: _preWorkout?.workoutClothesReady ?? false,
+            onChanged: (value) {
+              if (value != null) {
+                _savePreWorkout(
+                    _preWorkout!.copyWith(workoutClothesReady: value));
+              }
+            },
+          ),
+          CheckboxListTile(
+            title: const Text('Water Bottle Filled'),
+            value: _preWorkout?.waterBottleFilled ?? false,
+            onChanged: (value) {
+              if (value != null) {
+                _savePreWorkout(
+                    _preWorkout!.copyWith(waterBottleFilled: value));
+              }
+            },
           ),
           const SizedBox(height: 16),
           const Text('Energy Level:'),
@@ -129,18 +157,16 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
             }),
           ),
           const SizedBox(height: 16),
-          const Text('Water Intake:'),
-          Slider(
-            value: _preWorkout?.waterIntake ?? 500,
-            min: 0,
-            max: 2000,
-            divisions: 4,
-            label: '${(_preWorkout?.waterIntake ?? 500).round()}ml',
-            onChanged: (value) => setState(() {
-              _preWorkout = _preWorkout?.copyWith(waterIntake: value);
-            }),
-            onChangeEnd: (value) => _savePreWorkout(
-              _preWorkout!.copyWith(waterIntake: value)),
+          WaterTracker(
+            workout: Workout(
+              name: _workoutHistory.isNotEmpty
+                  ? _workoutHistory.first.name
+                  : 'Current Workout',
+              dayOfWeek: '',
+              time: '',
+              type: '',
+              waterIntake: _preWorkout?.waterIntake ?? 500,
+            ),
           ),
         ],
       ),
@@ -157,7 +183,7 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
                 return ListTile(
                   title: Text(workout.name),
                   subtitle: Text(
-                    '${workout.dayOfWeek} ${workout.time} • ${workout.type}',
+                    '${workout.dayOfWeek} ${workout.time} • ${workout.type} • Water: ${workout.waterIntake.round()}ml',
                   ),
                   trailing: Text('${workout.weight}kg x ${workout.reps}'),
                 );
@@ -178,8 +204,8 @@ class _SmartDashboardScreenState extends State<SmartDashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(weather.condition),
-              Text(weather.recommendIndoor 
-                  ? 'Recommended: Indoor workout' 
+              Text(weather.recommendIndoor
+                  ? 'Recommended: Indoor workout'
                   : 'Great for outdoor training'),
             ],
           ),
@@ -244,11 +270,15 @@ extension _PreWorkoutCopyWith on PreWorkout {
     bool? gymBagPrepped,
     int? energyLevel,
     double? waterIntake,
+    bool? workoutClothesReady,
+    bool? waterBottleFilled,
   }) {
     return PreWorkout(
       gymBagPrepped: gymBagPrepped ?? this.gymBagPrepped,
       energyLevel: energyLevel ?? this.energyLevel,
       waterIntake: waterIntake ?? this.waterIntake,
+      workoutClothesReady: workoutClothesReady ?? this.workoutClothesReady,
+      waterBottleFilled: waterBottleFilled ?? this.waterBottleFilled,
     );
   }
 }

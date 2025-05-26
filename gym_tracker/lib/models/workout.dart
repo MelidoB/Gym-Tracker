@@ -1,3 +1,4 @@
+// lib/models/workout.dart
 import 'dart:convert';
 
 class Workout {
@@ -8,6 +9,7 @@ class Workout {
   final int postWorkoutEnergy;
   final int reps;
   final double weight;
+  final double waterIntake;
 
   Workout({
     required this.name,
@@ -17,6 +19,7 @@ class Workout {
     this.postWorkoutEnergy = 0,
     this.reps = 0,
     this.weight = 0.0,
+    this.waterIntake = 0.0,
   });
 
   Map<String, dynamic> toJson() => {
@@ -27,6 +30,7 @@ class Workout {
         'postWorkoutEnergy': postWorkoutEnergy,
         'reps': reps,
         'weight': weight,
+        'waterIntake': waterIntake,
       };
 
   factory Workout.fromJson(Map<String, dynamic> json) => Workout(
@@ -37,5 +41,6 @@ class Workout {
         postWorkoutEnergy: json['postWorkoutEnergy'] as int? ?? 0,
         reps: json['reps'] as int? ?? 0,
         weight: (json['weight'] as num?)?.toDouble() ?? 0.0,
+        waterIntake: (json['waterIntake'] as num?)?.toDouble() ?? 0.0,
       );
 }

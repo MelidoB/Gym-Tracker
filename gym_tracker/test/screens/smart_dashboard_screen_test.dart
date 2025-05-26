@@ -38,44 +38,46 @@ void main() {
     });
 
     testWidgets('Renders correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        Provider<LocalStorageService>(
-          create: (_) => mockLocalStorageService,
-          child: MaterialApp(
-            home: const SmartDashboardScreen(),
-            routes: {
-              '/settings': (context) => const SettingsScreen(),
-            },
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  await tester.pumpWidget(
+    Provider<LocalStorageService>(
+      create: (_) => mockLocalStorageService,
+      child: MaterialApp(
+        home: const SmartDashboardScreen(),
+        routes: {
+          '/settings': (context) => const SettingsScreen(),
+        },
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
 
-      expect(find.text('Smart Dashboard'), findsOneWidget);
-      expect(find.text('Tuesday 17:00 • Legs'), findsOneWidget);
-      expect(find.text('Weather Advice'), findsOneWidget);
-      expect(find.text('Recommended Warmup'), findsOneWidget);
-    });
+  expect(find.text('Smart Dashboard'), findsOneWidget);
+  expect(find.text('Tuesday 17:00 • Legs • Water: 1000ml'), findsOneWidget); // Match mock data
+  expect(find.text('Weather Advice'), findsOneWidget);
+  expect(find.text('Recommended Warmup'), findsOneWidget);
+});
 
     testWidgets('Tapping gym bag checkbox saves pre-workout', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        Provider<LocalStorageService>(
-          create: (_) => mockLocalStorageService,
-          child: MaterialApp(
-            home: const SmartDashboardScreen(),
-            routes: {
-              '/settings': (context) => const SettingsScreen(),
-            },
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  await tester.pumpWidget(
+    Provider<LocalStorageService>(
+      create: (_) => mockLocalStorageService,
+      child: MaterialApp(
+        home: const SmartDashboardScreen(),
+        routes: {
+          '/settings': (context) => const SettingsScreen(),
+        },
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(Checkbox));
-      await tester.pump();
+  final checkbox = find.byType(Checkbox);
+  expect(checkbox, findsOneWidget); // Ensure checkbox is present
+  await tester.tap(checkbox);
+  await tester.pump();
 
-      verify(mockLocalStorageService.savePreWorkout(any)).called(1);
-    });
+  verify(mockLocalStorageService.savePreWorkout(any)).called(1);
+});
 
     testWidgets('Selecting energy level saves pre-workout', (WidgetTester tester) async {
       await tester.pumpWidget(
@@ -98,26 +100,28 @@ void main() {
     });
 
     testWidgets('Adjusting water intake slider saves pre-workout', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        Provider<LocalStorageService>(
-          create: (_) => mockLocalStorageService,
-          child: MaterialApp(
-            home: const SmartDashboardScreen(),
-            routes: {
-              '/settings': (context) => const SettingsScreen(),
-            },
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  await tester.pumpWidget(
+    Provider<LocalStorageService>(
+      create: (_) => mockLocalStorageService,
+      child: MaterialApp(
+        home: const SmartDashboardScreen(),
+        routes: {
+          '/settings': (context) => const SettingsScreen(),
+        },
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
 
-      // Dynamically get the Slider's center and drag from there
-      final sliderCenter = tester.getCenter(find.byType(Slider));
-      await tester.dragFrom(sliderCenter, const Offset(50.0, 0.0));
-      await tester.pumpAndSettle();
+  final slider = find.byType(Slider);
+  expect(slider, findsOneWidget); // Ensure slider is present
 
-      verify(mockLocalStorageService.savePreWorkout(any)).called(1);
-    });
+  final sliderCenter = tester.getCenter(slider);
+  await tester.dragFrom(sliderCenter, const Offset(50.0, 0.0)); // Simulate drag
+  await tester.pumpAndSettle();
+
+  verify(mockLocalStorageService.savePreWorkout(any)).called(1); // Verify savePreWorkout is called
+});
 
     testWidgets('Navigates to SettingsScreen on settings icon tap', (WidgetTester tester) async {
       await tester.pumpWidget(
@@ -140,30 +144,34 @@ void main() {
     });
 
     testWidgets('Handles pre-workout input', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        Provider<LocalStorageService>(
-          create: (_) => mockLocalStorageService,
-          child: MaterialApp(
-            home: const SmartDashboardScreen(),
-            routes: {
-              '/settings': (context) => const SettingsScreen(),
-            },
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 500));
+  await tester.pumpWidget(
+    Provider<LocalStorageService>(
+      create: (_) => mockLocalStorageService,
+      child: MaterialApp(
+        home: const SmartDashboardScreen(),
+        routes: {
+          '/settings': (context) => const SettingsScreen(),
+        },
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(Checkbox));
-      await tester.pump();
-      await tester.tap(find.text('3'));
-      await tester.pump();
-      // Dynamically get the Slider's center and drag from there
-      final sliderCenter = tester.getCenter(find.byType(Slider));
-      await tester.dragFrom(sliderCenter, const Offset(50.0, 0.0));
-      await tester.pumpAndSettle();
+  final checkbox = find.byType(Checkbox);
+  expect(checkbox, findsOneWidget); // Ensure checkbox exists
+  await tester.tap(checkbox);
+  await tester.pump();
 
-      verify(mockLocalStorageService.savePreWorkout(any)).called(3);
-    });
+  await tester.tap(find.text('3')); // Energy level
+  await tester.pump();
+
+  final slider = find.byType(Slider);
+  final sliderCenter = tester.getCenter(slider);
+  await tester.dragFrom(sliderCenter, const Offset(50.0, 0.0));
+  await tester.pumpAndSettle();
+
+  verify(mockLocalStorageService.savePreWorkout(any)).called(3); // 3 interactions
+});
 
     testWidgets('Displays warm-up suggestion', (WidgetTester tester) async {
       await tester.pumpWidget(

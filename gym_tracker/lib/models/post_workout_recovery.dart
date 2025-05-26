@@ -1,3 +1,4 @@
+// lib/models/post_workout_recovery.dart
 import 'dart:convert';
 
 class PostWorkoutRecovery {
@@ -5,12 +6,14 @@ class PostWorkoutRecovery {
   final int sorenessLevel;
   final int postWorkoutEnergy;
   final String recoveryNotes;
+  final double waterIntake;
 
   PostWorkoutRecovery({
     required this.workoutId,
     required this.sorenessLevel,
     required this.postWorkoutEnergy,
     required this.recoveryNotes,
+    this.waterIntake = 0.0,
   });
 
   Map<String, dynamic> toJson() => {
@@ -18,6 +21,7 @@ class PostWorkoutRecovery {
         'sorenessLevel': sorenessLevel,
         'postWorkoutEnergy': postWorkoutEnergy,
         'recoveryNotes': recoveryNotes,
+        'waterIntake': waterIntake,
       };
 
   factory PostWorkoutRecovery.fromJson(Map<String, dynamic> json) => PostWorkoutRecovery(
@@ -25,5 +29,6 @@ class PostWorkoutRecovery {
         sorenessLevel: json['sorenessLevel'] as int? ?? 0,
         postWorkoutEnergy: json['postWorkoutEnergy'] as int? ?? 0,
         recoveryNotes: json['recoveryNotes'] as String? ?? '',
+        waterIntake: (json['waterIntake'] as num?)?.toDouble() ?? 0.0,
       );
 }

@@ -1,3 +1,4 @@
+// lib/services/local_storage_service.dart
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gym_tracker/models/pre_workout.dart';
@@ -33,7 +34,13 @@ class LocalStorageService {
     await _initPrefs();
     final jsonString = _prefs!.getString('preWorkout');
     if (jsonString == null) {
-      return PreWorkout(gymBagPrepped: false, energyLevel: 1, waterIntake: 500);
+      return PreWorkout(
+        gymBagPrepped: false,
+        energyLevel: 1,
+        waterIntake: 500,
+        workoutClothesReady: false,
+        waterBottleFilled: false,
+      );
     }
     return PreWorkout.fromJson(jsonDecode(jsonString));
   }
@@ -55,7 +62,12 @@ class LocalStorageService {
   Future<void> saveWorkout(Workout workout) async {
     await _initPrefs();
     final workouts = await getWorkoutHistory();
-    workouts.add(workout);
+    final existingIndex = workouts.indexWhere((w) => w.name == workout.name);
+    if (existingIndex >= 0) {
+      workouts[existingIndex] = workout; // Update existing workout
+    } else {
+      workouts.add(workout); // Add new workout
+    }
     final jsonList = workouts.map((w) => jsonEncode(w.toJson())).toList();
     await _prefs!.setStringList('workouts', jsonList);
   }
@@ -86,6 +98,7 @@ class LocalStorageService {
         sorenessLevel: 0,
         postWorkoutEnergy: 0,
         recoveryNotes: '',
+        waterIntake: 0.0,
       );
     }
     try {
@@ -96,6 +109,7 @@ class LocalStorageService {
         sorenessLevel: 0,
         postWorkoutEnergy: 0,
         recoveryNotes: '',
+        waterIntake: 0.0,
       );
     }
   }
@@ -111,6 +125,7 @@ class LocalStorageService {
           time: '17:00',
           type: 'Legs',
           postWorkoutEnergy: 2,
+          waterIntake: 1000,
         ),
         Workout(
           name: 'Upper Body',
@@ -118,6 +133,7 @@ class LocalStorageService {
           time: '18:00',
           type: 'Upper',
           postWorkoutEnergy: 3,
+          waterIntake: 750,
         ),
       ];
       final jsonList = mockWorkouts.map((w) => jsonEncode(w.toJson())).toList();
@@ -129,12 +145,14 @@ class LocalStorageService {
           sorenessLevel: 4,
           postWorkoutEnergy: 2,
           recoveryNotes: 'Moderate soreness in quads',
+          waterIntake: 1000,
         ),
         PostWorkoutRecovery(
           workoutId: 'Upper Body',
           sorenessLevel: 3,
           postWorkoutEnergy: 3,
           recoveryNotes: 'Feeling okay',
+          waterIntake: 750,
         ),
       ];
       for (var soreness in mockSoreness) {
@@ -143,11 +161,10 @@ class LocalStorageService {
     }
   }
 
-  // Add to existing class
-Future<void> updateExerciseWeights(Map<String, double> newWeights) async {
-  final prefs = await getUserPreferences();
-  await saveUserPreferences(prefs.copyWith(
-    lastWeights: {...prefs.lastWeights, ...newWeights},
-  ));
-}
+  Future<void> updateExerciseWeights(Map<String, double> newWeights) async {
+    final prefs = await getUserPreferences();
+    await saveUserPreferences(prefs.copyWith(
+      lastWeights: {...prefs.lastWeights, ...newWeights},
+    ));
+  }
 }
